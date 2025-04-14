@@ -64,7 +64,7 @@
         const lines = text.trim().split("\n");
         const container = document.getElementById("feelingContainer");
         // Letzter Eintrag zuerst
-        lines.reverse().forEach(line => {
+        lines.forEach(line => {
           const [emotion, date, time, comment] = line.split(",");
           const finalComment = comment.trim() !== "" ? comment : "(kein Kommentar)";
           
