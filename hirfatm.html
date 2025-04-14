@@ -58,7 +58,7 @@
     </div>
   </div>
   <script>
-    fetch("https://raw.githubusercontent.com/NightKnight2947/hirfatm/main/feelings.txt")
+    fetch("https://raw.githubusercontent.com/NightKnight2947/hirfatm/main/feelings.txt?nocache=" + Date.now())
       .then(response => response.text())
       .then(text => {
         const lines = text.trim().split("\n");
