@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How is R feeling?</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    /* Container um alles zu zentrieren und die gleiche Breite wie der Titel zu liefern */
+    .content-container {
+      max-width: 600px;
+      margin: auto;
+      padding: 10px;
+    }
+    h1 {
+      text-align: center;
+      font-style: italic;
+      font-size: 2em;
+      margin: 20px 0;
+      text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
+                   -1px 1px 0 #fff, 1px 1px 0 #fff;
+    }
+    .rainbow span:nth-child(1) { color: red; }
+    .rainbow span:nth-child(2) { color: orange; }
+    .rainbow span:nth-child(3) { color: yellow; }
+    .rainbow span:nth-child(4) { color: green; }
+    .rainbow span:nth-child(5) { color: blue; }
+    .rainbow span:nth-child(6) { color: indigo; }
+    .rainbow span:nth-child(7) { color: violet; }
+    .container {
+      display: flex;
+      flex-direction: column;
+    }
+    .box {
+      background-color: #102961;
+      color: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="content-container">
+    <h1 class="rainbow">
+      <span>How</span> <span>is</span> <span>R</span> <span>feeling</span> <span>at</span> <span>the</span> <span>moment?</span>
+    </h1>
+    <div class="container" id="feelingContainer">
+      <!-- Textboxen werden hier eingefügt -->
+    </div>
+  </div>
+  <script>
+    fetch("https://raw.githubusercontent.com/NightKnight2947/hirfatm/main/feelings.txt")
+      .then(response => response.text())
+      .then(text => {
+        const lines = text.trim().split("\n");
+        const container = document.getElementById("feelingContainer");
+        // Letzter Eintrag zuerst
+        lines.reverse().forEach(line => {
+          const [emotion, date, time, comment] = line.split(",");
+          const finalComment = comment.trim() !== "" ? comment : "(kein Kommentar)";
+          
+          // Zwei Absätze: erster bis "mich" mit "..", zweiter mit Emotion und Kommentar
+          const htmlContent = `
+            <p>Am ${date} um ${time} fühlte ich mich ..</p>
+            <p>${emotion}, weil ${finalComment}.</p>
+          `;
+          const box = document.createElement("div");
+          box.className = "box";
+          box.innerHTML = htmlContent;
+          container.appendChild(box);
+        });
+      })
+      .catch(err => {
+        console.error("Fehler beim Laden der Datei 😢", err);
+      });
+  </script>
+</body>
+</html>
