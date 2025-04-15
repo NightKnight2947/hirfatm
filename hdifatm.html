@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wie fühlst du dich?</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      font-style: italic;
+      margin-bottom: 30px;
+    }
+    select, textarea, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+    }
+    textarea {
+      resize: vertical;
+    }
+    #errorMessage {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Wie fühlst du dich?</h1>
+    <select id="emotionSelect">
+      <option value="">Keine Emotion ausgewählt</option>
+      <option value="Sehr glücklich">Sehr glücklich</option>
+      <option value="Glücklich">Glücklich</option>
+      <option value="Gut gelaunt">Gut gelaunt</option>
+      <option value="Leicht freudig">Leicht freudig</option>
+      <option value="Okay">Okay</option>
+      <option value="Leer">Leer</option>
+      <option value="Leicht unwohl">Leicht unwohl</option>
+      <option value="Unwohl">Unwohl</option>
+      <option value="Traurig">Traurig</option>
+      <option value="Sehr traurig">Sehr traurig</option>
+      <option value="Extrem traurig">Extrem traurig</option>
+      <option value="Wütend">Wütend</option>
+      <option value="Sehr wütend">Sehr wütend</option>
+      <option value="Extrem wütend">Extrem wütend</option>
+      <option value="Genervt">Genervt</option>
+      <option value="Sehr genervt">Sehr genervt</option>
+      <option value="Extrem genervt">Extrem genervt</option>
+      <option value="Gestresst">Gestresst</option>
+      <option value="Sehr gestresst">Sehr gestresst</option>
+      <option value="Extrem gestresst">Extrem gestresst</option>
+      <option value="Panisch">Panisch</option>
+      <option value="Sehr panisch">Sehr panisch</option>
+      <option value="Krank">Krank</option>
+      <option value="Sehr krank">Sehr krank</option>
+      <option value="Schwächlich">Schwächlich</option>
+      <option value="Energetisch">Energetisch</option>
+      <option value="Konzentriert">Konzentriert</option>
+      <option value="Überrascht">Überrascht</option>
+      <option value="Verängstigt">Verängstigt</option>
+      <option value="Verwirrt">Verwirrt</option>
+      <option value="Erleichtert">Erleichtert</option>
+      <option value="Dankbar">Dankbar</option>
+      <option value="Belustigt">Belustigt</option>
+      <option value="Berührt">Berührt</option>
+      <option value="Schuldig">Schuldig</option>
+      <option value="Befriedigt">Befriedigt</option>
+      <option value="Geliebt">Geliebt</option>
+      <option value="Geborgen">Geborgen</option>
+      <option value="Einsam">Einsam</option>
+      <option value="Sehr einsam">Sehr einsam</option>
+      <option value="Hilflos">Hilflos</option>
+      <option value="Sehr hilflos">Sehr hilflos</option>
+    </select>
+    <textarea id="comment" rows="4" placeholder="Kommentar (optional, keine Textumbrüche)"></textarea>
+    <button id="sendBtn">Senden</button>
+    <div id="errorMessage"></div>
+  </div>
+
+  <script>
+    // Funktion zur UTF-8 Base64-Kodierung (behandelt auch Umlaute)
+    function base64EncodeUnicode(str) {
+      return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        function(match, p1) {
+          return String.fromCharCode('0x' + p1);
+        }));
+    }
+
+    document.getElementById("sendBtn").addEventListener("click", pushFeeling);
+
+    async function pushFeeling() {
+      const emotion = document.getElementById("emotionSelect").value;
+      const commentField = document.getElementById("comment");
+      const commentText = commentField.value.trim();
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.innerText = "";
+
+      if (!emotion) {
+        errorMessage.innerText = "Bitte wähle eine Emotion aus.";
+        return;
+      }
+
+      // Prüfen auf Textumbrüche im Kommentar
+      if (commentText.includes("\n") || commentText.includes("\r")) {
+        errorMessage.innerText = "Der Kommentar darf keine Zeilenumbrüche enthalten.";
+        return;
+      }
+
+      // Token per prompt abfragen
+      const token = prompt("Bitte gib deinen GitHub-Token ein:");
+      if (!token) {
+        errorMessage.innerText = "Token wurde nicht eingegeben.";
+        return;
+      }
+
+      const now = new Date();
+      const date = now.toLocaleDateString('de-DE');
+      const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      const finalComment = commentText !== "" ? commentText : "(kein Kommentar)";
+      const newLine = `${emotion},${date},${time},${finalComment}`;
+
+      const apiUrl = "https://api.github.com/repos/NightKnight2947/hirfatm/contents/feelings.txt";
+
+      try {
+        // Datei abrufen
+        let response = await fetch(apiUrl, {
+          headers: { "Authorization": "token " + token }
+        });
+        if (!response.ok) throw new Error("Fehler beim Abrufen der Datei");
+        const fileData = await response.json();
+
+        // Aktuellen Inhalt decodieren (Base64) und leere Zeilen entfernen
+        const currentContent = atob(fileData.content.replace(/\n/g, ''));
+        const cleanContent = currentContent
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line !== "")
+          .join('\n');
+
+        // Sicherstellen, dass nur eine einzelne neue Zeile angehängt wird
+        const updatedContent = cleanContent ? cleanContent + "\n" + newLine : newLine;
+        const encodedContent = base64EncodeUnicode(updatedContent);
+
+        const updateResponse = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": "token " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Neues Gefühl hinzugefügt",
+            content: encodedContent,
+            sha: fileData.sha
+          })
+        });
+
+        if (updateResponse.ok) {
+          document.getElementById("emotionSelect").value = "";
+          commentField.value = "";
+          errorMessage.innerText = "";
+          alert("Gefühl erfolgreich gesendet! ^^");
+        } else {
+          throw new Error("Update fehlgeschlagen");
+        }
+      } catch (error) {
+        console.error("Push-Fehler:", error);
+        errorMessage.innerText = "Senden fehlgeschlagen...";
+      }
+    }
+  </script>
+</body>
+</html>
