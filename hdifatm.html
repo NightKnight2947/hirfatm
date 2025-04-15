@@ -119,6 +119,11 @@
         return;
       }
 
+      if (commentText.includes(",")) {
+        errorMessage.innerText = "Der Kommentar darf keine Kommas enthalten.";
+        return;
+      }      
+
       // Token per prompt abfragen
       const token = prompt("Bitte gib deinen GitHub-Token ein:");
       if (!token) {
