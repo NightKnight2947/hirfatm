@@ -61,14 +61,14 @@
     fetch("https://raw.githubusercontent.com/NightKnight2947/hirfatm/main/feelings.txt?nocache=" + Date.now())
       .then(response => response.text())
       .then(text => {
-        const lines = text.trim().split("\n");
+        // Leere Zeilen überspringen
+        const lines = text.trim().split("\n").filter(line => line.trim() !== "");
         const container = document.getElementById("feelingContainer");
-        // Letzter Eintrag zuerst
+        // Jeder Eintrag wird als Box hinzugefügt (letzter Eintrag oben)
         lines.forEach(line => {
           const [emotion, date, time, comment] = line.split(",");
-          const finalComment = comment.trim() !== "" ? comment : "(kein Kommentar)";
+          const finalComment = comment && comment.trim() !== "" ? comment : "(kein Kommentar)";
           
-          // Zwei Absätze: erster bis "mich" mit "..", zweiter mit Emotion und Kommentar
           const htmlContent = `
             <p>Am ${date} um ${time} fühlte ich mich ..</p>
             <p>${emotion}, weil ${finalComment}.</p>
@@ -80,7 +80,7 @@
         });
       })
       .catch(err => {
-        console.error("Fehler beim Laden der Datei 😢", err);
+        console.error("Fehler beim Laden der Datei", err);
       });
   </script>
 </body>
